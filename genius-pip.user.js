@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Genius PiP
 // @namespace    https://github.com/bennett-sh
-// @version      1.0
+// @version      1.0.1
 // @description  Adds a PiP button (requires chrome://flags/#document-picture-in-picture-api)
 // @author       BSH
 // @match        https://genius.com/*-lyrics*
@@ -11,7 +11,6 @@
 // ==/UserScript==
 
 const $ = s => document.querySelector(s)
-const $$ = s => document.querySelectorAll(s)
 
 let oldLyrics
 let lyrics
