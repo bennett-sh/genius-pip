@@ -10,7 +10,6 @@
 // ==/UserScript==
 
 const $ = s => document.querySelector(s)
-const $$ = s => document.querySelectorAll(s)
 
 let oldLyrics
 let lyrics
