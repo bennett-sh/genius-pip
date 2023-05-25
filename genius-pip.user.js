@@ -204,7 +204,7 @@ function exitPiP() {
 }
 
 function injectPiPButton() {
-    $(".bBMTMQ").append(createPiPButton())
+    $(".StickyContributorToolbar__Left-sc-1s6k5oy-1").append(createPiPButton())
 }
 
 (function() {
