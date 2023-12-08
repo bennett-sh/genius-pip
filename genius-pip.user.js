@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Genius PiP
 // @namespace    https://github.com/bennett-sh
-// @version      1.0.1
+// @version      1.1.0
 // @description  Adds a PiP button (requires chrome://flags/#document-picture-in-picture-api)
 // @author       BSH
 // @match        https://genius.com/*-lyrics*
@@ -12,10 +12,7 @@
 
 const $ = s => document.querySelector(s)
 
-let oldLyrics
-let lyrics
-let parent
-let pip
+let parent, pip, lyrics, footer, oldLyrics
 
 // Highlights important text parts
 // Runs in the PiP doc
@@ -30,12 +27,14 @@ const piPInline = (() => {
             resultStyle += 'font-weight: bold;'
         }
 
-        if(isTextAnnotation && line.includes('Songtext')) resultStyle += 'color: white; background-color: orange;'
-        if(isTextAnnotation && (line.includes('Hook') || line.includes('Chorus'))) resultStyle += 'color: white; background-color: green;'
-        if(isTextAnnotation && line.includes('Pre-Hook')) resultStyle += 'color: white; background-color: red;'
-        if(isTextAnnotation && line.includes('Intro')) resultStyle += 'color: white; background-color: gray;'
-        if(isTextAnnotation && line.includes('Outro')) resultStyle += 'color: white; background-color: gray;'
-        if(isTextAnnotation && (line.includes('Part') || line.includes('Verse'))) resultStyle += 'color: white; background-color: purple;'
+        if(isTextAnnotation) {
+            if(line.includes('Songtext')) resultStyle += 'color: white; background-color: orange;'
+            if(line.includes('Hook') || line.includes('Chorus')) resultStyle += 'color: white; background-color: green;'
+            if(line.includes('Pre-Hook')) resultStyle += 'color: white; background-color: red;'
+            if(line.includes('Intro')) resultStyle += 'color: white; background-color: gray;'
+            if(line.includes('Outro')) resultStyle += 'color: white; background-color: gray;'
+            if(line.includes('Part') || line.includes('Verse')) resultStyle += 'color: white; background-color: purple;'
+        }
 
         return `<span style="${resultStyle}">${line}</span>`
     }
@@ -47,7 +46,7 @@ const piPInline = (() => {
 }).toString()
 
 function convertRemToPixels(rem) {
-    return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+    return rem * parseFloat(getComputedStyle(document.documentElement).fontSize)
 }
 
 function createElement(type, options = {
@@ -111,7 +110,8 @@ function createPiPMessage() {
             font-size: 200%;
             font-weight: bold;
             grid-column: left-start / left-end;
-            padding-bottom: 3rem;
+            padding-bottom: 1rem;
+            padding-top: 1rem;
             user-select: none;
             text-align: center;
         `
@@ -119,6 +119,7 @@ function createPiPMessage() {
 }
 
 async function spawnPiP() {
+    footer = $('#lyrics-root>div[class^=LyricsFooter__Container-]')
     lyrics = $("[data-lyrics-container]")
     parent = $("#lyrics-root")
     pip = await documentPictureInPicture.requestWindow({
@@ -127,7 +128,7 @@ async function spawnPiP() {
     })
 
     oldLyrics = lyrics.innerHTML
-    parent.append(createPiPMessage())
+    parent.insertBefore(createPiPMessage(), footer)
     document.body.classList.add('lyrics-pip')
     pip.document.body.append(createElement('div', {
         children: [lyrics, createElement('script', {
@@ -191,13 +192,24 @@ body {
     pip.window.addEventListener('unload', () => exitPiP())
 }
 
+function swapElements(element1, element2) {
+  const parent = element1.parentNode
+  const temp = document.createTextNode('')
+  parent.insertBefore(temp, element1)
+  element2.parentNode.insertBefore(element1, element2)
+  temp.parentNode.insertBefore(element2, temp)
+  parent.removeChild(temp)
+}
+
 function exitPiP() {
     pip.window.close()
     parent.append(lyrics)
     $('.pip-message').remove()
     document.body.classList.remove('lyrics-pip')
     lyrics.innerHTML = oldLyrics
+    swapElements(footer, lyrics)
     oldLyrics = null
+    footer = null
     lyrics = null
     parent = null
     pip = null
