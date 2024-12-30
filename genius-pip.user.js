@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Genius PiP
 // @namespace    https://github.com/bennett-sh
-// @version      1.1.0
+// @version      1.0.2
 // @description  Adds a PiP button (requires chrome://flags/#document-picture-in-picture-api)
 // @author       BSH
 // @match        https://genius.com/*-lyrics*
@@ -73,7 +73,7 @@ function createElement(type, options = {
 function createButton(text, onClick) {
     return createElement('button', {
         text,
-        classes: ['kviCal', 'smKwV'],
+        classes: ['jYOrgC'],
         events: {
             'click': [onClick.bind(this)]
         }
@@ -119,7 +119,7 @@ function createPiPMessage() {
 }
 
 async function spawnPiP() {
-    footer = $('#lyrics-root>div[class^=LyricsFooter__Container-]')
+    footer = $('#lyrics-root>div[class^=LyricsFooter-]')
     lyrics = $("[data-lyrics-container]")
     parent = $("#lyrics-root")
     pip = await documentPictureInPicture.requestWindow({
@@ -192,22 +192,12 @@ body {
     pip.window.addEventListener('unload', () => exitPiP())
 }
 
-function swapElements(element1, element2) {
-  const parent = element1.parentNode
-  const temp = document.createTextNode('')
-  parent.insertBefore(temp, element1)
-  element2.parentNode.insertBefore(element1, element2)
-  temp.parentNode.insertBefore(element2, temp)
-  parent.removeChild(temp)
-}
-
 function exitPiP() {
     pip.window.close()
-    parent.append(lyrics)
+    parent.insertBefore(lyrics, parent.childNodes[1])
     $('.pip-message').remove()
     document.body.classList.remove('lyrics-pip')
     lyrics.innerHTML = oldLyrics
-    swapElements(footer, lyrics)
     oldLyrics = null
     footer = null
     lyrics = null
@@ -216,7 +206,7 @@ function exitPiP() {
 }
 
 function injectPiPButton() {
-    $(".StickyContributorToolbar__Left-sc-1s6k5oy-1").append(createPiPButton())
+    $(":has(>[class^=StickyContributorToolbar]):first-child").append(createPiPButton())
 }
 
 (function() {
